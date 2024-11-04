@@ -100,12 +100,12 @@
 		<repository>
 			<id>deploymentRepo</id>
 			<name>Nexus Repository</name>
-			<url>http://192.168.33.10:8081/repository/maven-releases/</url>
+			<url>http://172.10.0.140:8081/repository/maven-releases/</url>
 		</repository>
 		<snapshotRepository>
 			<id>deploymentRepo</id>
 			<name>Nexus Repository Snapshots</name>
-			<url>http://192.168.33.10:8081/repository/maven-snapshots/</url>
+			<url>http://172.10.0.140:8081/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>

@@ -11,7 +11,7 @@ services:
 
 
   spring_app:
-    image: dekhilons/stationski:latest
+    image: yahya/stationski:latest
     container_name: devopscontainer
     restart: on-failure
     ports:
