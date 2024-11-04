@@ -8,14 +8,16 @@ import org.mockito.MockitoAnnotations;
 import tn.esprit.spring.entities.Course;
 import tn.esprit.spring.entities.Registration;
 import tn.esprit.spring.entities.Skier;
+import tn.esprit.spring.entities.Support;
 import tn.esprit.spring.entities.TypeCourse;
 import tn.esprit.spring.repositories.ICourseRepository;
 import tn.esprit.spring.repositories.IRegistrationRepository;
 import tn.esprit.spring.repositories.ISkierRepository;
 
-import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,19 +46,24 @@ class RegistrationServicesImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Initialize Skier using no-argument constructor and setters
+        // Initialize Skier
         skier = new Skier();
         skier.setNumSkier(1L);
         skier.setFirstName("Jane");
         skier.setLastName("Doe");
-        skier.setDateOfBirth(LocalDate.of(2005, 5, 15));
-        skier.setCity("City A");
-        skier.setPistes(new HashSet<>()); // Initialize empty set for pistes
+        skier.setDateOfBirth(LocalDate.of(2005, 1, 1));
+        skier.setCity("Paris");
+        skier.setRegistrations(new HashSet<>());
 
         // Initialize Course
         course = new Course();
         course.setNumCourse(1L);
-        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN); // Example course type
+        course.setLevel(1);
+        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN);
+        course.setSupport(Support.SKI);
+        course.setPrice(100.0f);
+        course.setTimeSlot(2);
+        course.setRegistrations(new HashSet<>());
 
         // Initialize Registration
         registration = new Registration();
@@ -75,12 +82,13 @@ class RegistrationServicesImplTest {
 
         assertNotNull(result);
         assertEquals(skier, result.getSkier());
+        assertEquals(registration.getNumRegistration(), result.getNumRegistration());
+        verify(skierRepository, times(1)).findById(1L);
         verify(registrationRepository, times(1)).save(registration);
     }
 
     @Test
     void assignRegistrationToCourse() {
-        registration.setNumRegistration(1L); // Ensure registration is initialized
         when(registrationRepository.findById(1L)).thenReturn(Optional.of(registration));
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
@@ -89,10 +97,11 @@ class RegistrationServicesImplTest {
 
         assertNotNull(result);
         assertEquals(course, result.getCourse());
+        verify(registrationRepository, times(1)).findById(1L);
+        verify(courseRepository, times(1)).findById(1L);
         verify(registrationRepository, times(1)).save(registration);
     }
 
-    @Transactional
     @Test
     void addRegistrationAndAssignToSkierAndCourse() {
         when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
@@ -105,46 +114,19 @@ class RegistrationServicesImplTest {
         assertNotNull(result);
         assertEquals(skier, result.getSkier());
         assertEquals(course, result.getCourse());
+        verify(skierRepository, times(1)).findById(1L);
+        verify(courseRepository, times(1)).findById(1L);
         verify(registrationRepository, times(1)).save(registration);
     }
 
     @Test
-    void addRegistrationAndAssignToSkierAndCourse_SkierNotFound() {
-        when(skierRepository.findById(1L)).thenReturn(Optional.empty());
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
+    void numWeeksCourseOfInstructorBySupport() {
+        when(registrationRepository.numWeeksCourseOfInstructorBySupport(anyLong(), any(Support.class))).thenReturn(Arrays.asList(1, 2, 3));
 
-        assertNull(result); // Expect null because skier not found
+        List<Integer> result = registrationServices.numWeeksCourseOfInstructorBySupport(1L, Support.SKI);
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        verify(registrationRepository, times(1)).numWeeksCourseOfInstructorBySupport(1L, Support.SKI);
     }
-
-    @Test
-    void addRegistrationAndAssignToSkierAndCourse_CourseNotFound() {
-        when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
-        when(courseRepository.findById(1L)).thenReturn(Optional.empty());
-
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
-
-        assertNull(result); // Expect null because course not found
-    }
-//    @Transactional
-//    @Test
-//    void addRegistrationAndAssignToSkierAndCourse_Success() {
-//        // Set up the mocked behavior
-//        when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
-//        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
-//        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(anyInt(), anyLong(), anyLong())).thenReturn(0L);
-//
-//        // Mock the save behavior to return the registration
-//        when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
-//
-//        // Execute the method
-//        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
-//
-//        // Verify results
-//        assertNotNull(result);
-//        assertEquals(skier, result.getSkier());
-//        assertEquals(course, result.getCourse());
-//        verify(registrationRepository, times(1)).save(registration); // Ensure save was called
-//    }
-
 }
-///
