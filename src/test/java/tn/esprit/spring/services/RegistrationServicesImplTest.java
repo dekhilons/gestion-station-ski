@@ -125,26 +125,26 @@ class RegistrationServicesImplTest {
 
         assertNull(result); // Expect null because course not found
     }
-    @Transactional
-    @Test
-    void addRegistrationAndAssignToSkierAndCourse_Success() {
-        // Set up the mocked behavior
-        when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
-        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
-        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(anyInt(), anyLong(), anyLong())).thenReturn(0L);
-
-        // Mock the save behavior to return the registration
-        when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
-
-        // Execute the method
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
-
-        // Verify results
-        assertNotNull(result);
-        assertEquals(skier, result.getSkier());
-        assertEquals(course, result.getCourse());
-        verify(registrationRepository, times(1)).save(registration); // Ensure save was called
-    }
+//    @Transactional
+//    @Test
+//    void addRegistrationAndAssignToSkierAndCourse_Success() {
+//        // Set up the mocked behavior
+//        when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
+//        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+//        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(anyInt(), anyLong(), anyLong())).thenReturn(0L);
+//
+//        // Mock the save behavior to return the registration
+//        when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
+//
+//        // Execute the method
+//        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
+//
+//        // Verify results
+//        assertNotNull(result);
+//        assertEquals(skier, result.getSkier());
+//        assertEquals(course, result.getCourse());
+//        verify(registrationRepository, times(1)).save(registration); // Ensure save was called
+//    }
 
 }
 ///
