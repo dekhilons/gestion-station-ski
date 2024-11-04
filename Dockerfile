@@ -1,9 +1,10 @@
+# Use OpenJDK 17 with Alpine as the base image
 FROM openjdk:17-alpine
 
-# Install curl
+# Install curl to fetch the JAR file from Nexus
 RUN apk add --no-cache curl
 
-# Expose port 8082 instead of 9090, as specified in ENTRYPOINT
+# Expose port 8082 (as specified in the ENTRYPOINT)
 EXPOSE 8082
 
 # Download the JAR file directly from Nexus
