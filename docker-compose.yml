@@ -11,7 +11,7 @@ services:
 
 
   spring_app:
-    image: dekhilons/stationski:latest
+    image: dekhilons/ons_dekhil_5ds2_skistation
     container_name: devopscontainer
     restart: on-failure
     ports:
