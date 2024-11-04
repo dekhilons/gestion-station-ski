@@ -11,7 +11,7 @@ services:
 
 
   spring_app:
-    image: malek/stationski:latest
+    image: malekz007/malekzitouni_5ds2_g4_stationski
     container_name: devopscontainer
     restart: on-failure
     ports:
