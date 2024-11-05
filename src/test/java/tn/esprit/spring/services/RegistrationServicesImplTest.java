@@ -41,7 +41,7 @@ class RegistrationServicesImplTest {
     @BeforeEach
     void setUp() {
         skier = new Skier(1L, "John", "Doe", LocalDate.of(2010, 1, 1), "CityName", null, null, null);
-        course = new Course(1L, 1, TypeCourse.COLLECTIVE_CHILDREN, Support.SKI, 100.0f, 2, null);
+        course = new Course(1L, 1, TypeCourse.COLLECTIVE_CHILDREN, Support.SKI, 100.0f, 5, null); // Set max capacity for tests
         registration = new Registration(1L, 1, skier, course);
     }
 
@@ -75,11 +75,13 @@ class RegistrationServicesImplTest {
 
     @Test
     void testAddRegistrationAndAssignToSkierAndCourse_ChildCourse() {
-        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Age 14 for child course
+        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Skier is 14 years old
+        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN);
+
         when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
         when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
         when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(5L); // Less than max capacity
+        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(3L); // Less than max capacity
 
         Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
 
@@ -91,22 +93,24 @@ class RegistrationServicesImplTest {
 
     @Test
     void testAddRegistrationAndAssignToSkierAndCourse_FullCourse() {
-        skier.setDateOfBirth(LocalDate.now().minusYears(14));  // Age for child course
+        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Skier is eligible for child course
+        course.setMaxParticipants(5); // Assume max capacity is 5
+
         when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
         when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
         when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(6L); // Full capacity
+        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(5L); // At max capacity
 
         Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
 
-        assertNull(result); // Should not allow registration
+        assertNull(result); // Registration should not proceed if course is full
         verify(registrationRepository, never()).save(registration);
     }
 
     @Test
     void testAddRegistrationAndAssignToSkierAndCourse_AdultInChildCourse() {
-        skier.setDateOfBirth(LocalDate.now().minusYears(20));  // Age 20 for adult course
-        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN);
+        skier.setDateOfBirth(LocalDate.now().minusYears(20));  // Skier is 20 years old (adult)
+        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN); // Child course
 
         when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
         when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
@@ -114,13 +118,13 @@ class RegistrationServicesImplTest {
 
         Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
 
-        assertNull(result); // Should not allow adult in child course
+        assertNull(result); // Registration should not proceed if adult tries to join a child course
         verify(registrationRepository, never()).save(registration);
     }
 
     @Test
     void testAddRegistrationAndAssignToSkierAndCourse_IndividualCourse() {
-        course.setTypeCourse(TypeCourse.INDIVIDUAL);
+        course.setTypeCourse(TypeCourse.INDIVIDUAL); // Set as individual course
 
         when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
         when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
