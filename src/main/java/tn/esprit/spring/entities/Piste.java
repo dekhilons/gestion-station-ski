@@ -28,6 +28,6 @@ public class Piste implements Serializable {
 	int slope;
 
 	@ManyToMany(mappedBy= "pistes")
-	Set<Skier> skiers;
+	private transient Set<Skier> skiers;
 	
 }
