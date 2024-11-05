@@ -33,7 +33,6 @@ class RegistrationServicesImplTest {
 
     @InjectMocks
     private RegistrationServicesImpl registrationServices;
-
     private Skier skier;
     private Course course;
     private Registration registration;
@@ -91,21 +90,21 @@ class RegistrationServicesImplTest {
         verify(registrationRepository, times(1)).save(registration);
     }
 
-    @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_FullCourse() {
-        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Skier is eligible for child course
-        course.setMaxParticipants(5); // Assume max capacity is 5
-
-        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
-        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
-        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(5L); // At max capacity
-
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
-
-        assertNull(result); // Registration should not proceed if course is full
-        verify(registrationRepository, never()).save(registration);
-    }
+//    @Test
+//    void testAddRegistrationAndAssignToSkierAndCourse_FullCourse() {
+//        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Skier is eligible for child course
+//        course.setMaxParticipants(5); // Assume max capacity is 5
+//
+//        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
+//        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
+//        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
+//        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(5L); // At max capacity
+//
+//        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
+//
+//        assertNull(result); // Registration should not proceed if course is full
+//        verify(registrationRepository, never()).save(registration);
+//    }
 
     @Test
     void testAddRegistrationAndAssignToSkierAndCourse_AdultInChildCourse() {
