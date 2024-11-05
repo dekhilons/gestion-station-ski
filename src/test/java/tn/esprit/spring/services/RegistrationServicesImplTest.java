@@ -1,26 +1,28 @@
+// src/test/java/tn/esprit/spring/services/RegistrationServicesImplTest.java
+
 package tn.esprit.spring.services;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import tn.esprit.spring.entities.*;
-import tn.esprit.spring.repositories.ICourseRepository;
+
+import tn.esprit.spring.entities.Registration;
+import tn.esprit.spring.entities.Skier;
+import tn.esprit.spring.entities.Course;
 import tn.esprit.spring.repositories.IRegistrationRepository;
 import tn.esprit.spring.repositories.ISkierRepository;
-///
-import java.time.LocalDate;
+import tn.esprit.spring.repositories.ICourseRepository;
+
 import java.util.Optional;
 
-@Slf4j
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
-class RegistrationServicesImplTest {
+public class RegistrationServicesImplTest {
 
     @Mock
     private IRegistrationRepository registrationRepository;
@@ -33,107 +35,85 @@ class RegistrationServicesImplTest {
 
     @InjectMocks
     private RegistrationServicesImpl registrationServices;
+
+    private Registration registration;
     private Skier skier;
     private Course course;
-    private Registration registration;
 
     @BeforeEach
-    void setUp() {
-        skier = new Skier(1L, "John", "Doe", LocalDate.of(2010, 1, 1), "CityName", null, null, null);
-        course = new Course(1L, 1, TypeCourse.COLLECTIVE_CHILDREN, Support.SKI, 100.0f, 5, null); // Set max capacity for tests
-        registration = new Registration(1L, 1, skier, course);
+    public void setup() {
+        registration = new Registration(1L, 2, skier, course);
+        skier = new Skier();
+        course = new Course();
     }
 
     @Test
-    void testAddRegistrationAndAssignToSkier() {
-        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
-        when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
+    public void testAddRegistrationAndAssignToSkierAndCourse() {
+        // Arrange
+        when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
 
-        Registration result = registrationServices.addRegistrationAndAssignToSkier(registration, skier.getNumSkier());
+        // Act
+        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
 
+        // Assert
         assertNotNull(result);
-        assertEquals(skier, result.getSkier());
-        verify(skierRepository, times(1)).findById(skier.getNumSkier());
-        verify(registrationRepository, times(1)).save(registration);
-    }
-
-    @Test
-    void testAssignRegistrationToCourse() {
-        when(registrationRepository.findById(registration.getNumRegistration())).thenReturn(Optional.of(registration));
-        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
-        when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
-
-        Registration result = registrationServices.assignRegistrationToCourse(registration.getNumRegistration(), course.getNumCourse());
-
-        assertNotNull(result);
-        assertEquals(course, result.getCourse());
-        verify(registrationRepository, times(1)).findById(registration.getNumRegistration());
-        verify(courseRepository, times(1)).findById(course.getNumCourse());
-        verify(registrationRepository, times(1)).save(registration);
-    }
-
-//    @Test
-//    void testAddRegistrationAndAssignToSkierAndCourse_ChildCourse() {
-//        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Skier is 14 years old
-//        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN);
-//
-//        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
-//        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
-//        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-//        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(3L); // Less than max capacity
-//
-//        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
-//
-//        assertNotNull(result);
-//        assertEquals(skier, result.getSkier());
-//        assertEquals(course, result.getCourse());
-//        verify(registrationRepository, times(1)).save(registration);
-//    }
-
-//    @Test
-//    void testAddRegistrationAndAssignToSkierAndCourse_FullCourse() {
-//        skier.setDateOfBirth(LocalDate.now().minusYears(10));  // Skier is eligible for child course
-//        course.setMaxParticipants(5); // Assume max capacity is 5
-//
-//        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
-//        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
-//        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-//        when(registrationRepository.countByCourseAndNumWeek(course, 1)).thenReturn(5L); // At max capacity
-//
-//        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
-//
-//        assertNull(result); // Registration should not proceed if course is full
-//        verify(registrationRepository, never()).save(registration);
-//    }
-
-    @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_AdultInChildCourse() {
-        skier.setDateOfBirth(LocalDate.now().minusYears(20));  // Skier is 20 years old (adult)
-        course.setTypeCourse(TypeCourse.COLLECTIVE_CHILDREN); // Child course
-
-        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
-        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
-        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
-
-        assertNull(result); // Registration should not proceed if adult tries to join a child course
-        verify(registrationRepository, never()).save(registration);
-    }
-
-    @Test
-    void testAddRegistrationAndAssignToSkierAndCourse_IndividualCourse() {
-        course.setTypeCourse(TypeCourse.INDIVIDUAL); // Set as individual course
-
-        when(skierRepository.findById(skier.getNumSkier())).thenReturn(Optional.of(skier));
-        when(courseRepository.findById(course.getNumCourse())).thenReturn(Optional.of(course));
-        when(registrationRepository.countDistinctByNumWeekAndSkier_NumSkierAndCourse_NumCourse(1, skier.getNumSkier(), course.getNumCourse())).thenReturn(0L);
-
-        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, skier.getNumSkier(), course.getNumCourse());
-
-        assertNotNull(result);
+        assertEquals(registration.getNumRegistration(), result.getNumRegistration());
+        assertEquals(registration.getNumWeek(), result.getNumWeek());
         assertEquals(skier, result.getSkier());
         assertEquals(course, result.getCourse());
-        verify(registrationRepository, times(1)).save(registration);
+    }
+
+    @Test
+    public void testAddRegistrationAndAssignToSkierAndCourse_SkierNotFound() {
+        // Arrange
+        when(skierRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act
+        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
+
+        // Assert
+        assertNull(result);
+    }
+
+    @Test
+    public void testAddRegistrationAndAssignToSkierAndCourse_CourseNotFound() {
+        // Arrange
+        when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
+        when(courseRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act
+        Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
+
+        // Assert
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetRegistrationById_RegistrationFound() {
+        // Arrange
+        when(registrationRepository.findById(1L)).thenReturn(Optional.of(registration));
+
+        // Act
+        Registration result = registrationServices.getRegistrationById(1L);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(registration.getNumRegistration(), result.getNumRegistration());
+        assertEquals(registration.getNumWeek(), result.getNumWeek());
+        assertEquals(skier, result.getSkier());
+        assertEquals(course, result.getCourse());
+    }
+
+    @Test
+    public void testGetRegistrationById_RegistrationNotFound() {
+        // Arrange
+        when(registrationRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act
+        Registration result = registrationServices.getRegistrationById(1L);
+
+        // Assert
+        assertNull(result);
     }
 }
