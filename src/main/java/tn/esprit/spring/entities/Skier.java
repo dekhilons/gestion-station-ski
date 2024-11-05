@@ -42,7 +42,7 @@ public class Skier implements Serializable {
 
 
 	@OneToMany(mappedBy = "skier")
-	Set<Registration> registrations;
+	private transient Set<Registration> registrations;
 
 
 
