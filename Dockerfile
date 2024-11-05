@@ -1,6 +1,6 @@
 FROM openjdk:17-alpine
 RUN apk add --no-cache curl
-EXPOSE 9090
+EXPOSE 9096
 RUN curl -o app.jar http://admin:nexus@192.168.33.10:8082/repository/maven-releases/tn/esprit/stationSki/1.0/stationSki-1.0.jar
 WORKDIR /
 ENV SPRINGPROFILES=prod
