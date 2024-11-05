@@ -52,16 +52,25 @@ public class RegistrationServicesImplTest {
         // Arrange
         when(skierRepository.findById(1L)).thenReturn(Optional.of(skier));
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
-
+    
         // Act
         Registration result = registrationServices.addRegistrationAndAssignToSkierAndCourse(registration, 1L, 1L);
-
+    
         // Assert
         assertNotNull(result);
         assertEquals(registration.getNumRegistration(), result.getNumRegistration());
         assertEquals(registration.getNumWeek(), result.getNumWeek());
         assertEquals(skier, result.getSkier());
         assertEquals(course, result.getCourse());
+    
+        // Check if getRegistrationById method exists
+        boolean hasGetRegistrationById = ReflectionUtils.isMethodAvailable(RegistrationServicesImpl.class, "getRegistrationById");
+        if (hasGetRegistrationById) {
+            // Call getRegistrationById method
+            Optional<Registration> registrationOptional = registrationServices.getRegistrationById(1L);
+            assertTrue(registrationOptional.isPresent());
+            assertEquals(result, registrationOptional.get());
+        }
     }
 
     @Test
