@@ -9,9 +9,8 @@ services:
     volumes:
       - /home/mysql/data:/var/lib/mysql
 
-
   spring_app:
-    image: nermne/stationski:latest
+    image: nermine01/stationski:latest
     container_name: devopscontainer
     restart: on-failure
     ports:
